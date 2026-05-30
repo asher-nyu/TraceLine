@@ -17,17 +17,13 @@ TraceLine is a stateless Angular + Go text comparison app. It compares text ente
 
 ## Features
 
-- Empty first-run workspace with guided placeholders.
 - Version A / Version B labels that work on desktop and mobile layouts.
 - Side-by-side line comparison view.
 - Word-level highlighting inside changed lines.
-- Identical-text message in the result area.
 - Drag-and-drop or button upload for text-compatible files up to 25 MB.
 - Supported uploads include `.txt`, `.md`, `.json`, `.csv`, `.html`, `.xml`, `.yaml`, `.log`, common code files, and related text formats.
 - One-click HTML export from the frontend that mirrors the current comparison page.
 - Responsive layout, keyboard shortcuts, tooltips, toasts, accessible labels, and reduced-motion-friendly styling.
-
-TraceLine does not include accounts, saved comparison history, share links, JSON-specific comparison tools, Markdown preview tools, or a database.
 
 ## API
 
