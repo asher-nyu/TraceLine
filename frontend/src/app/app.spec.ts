@@ -71,6 +71,7 @@ describe('App', () => {
 
   afterEach(() => {
     http.verify();
+    vi.restoreAllMocks();
   });
 
   it('renders the product name and empty result guidance', () => {
@@ -193,10 +194,15 @@ describe('App', () => {
     const app = fixture.componentInstance as any;
     const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:diff');
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"></svg>', {
+        status: 200,
+      }),
+    );
     app.result.set(compareResultFixture);
     fixture.detectChanges();
 
-    app.exportResult();
+    await app.exportResult();
 
     expect(createObjectURL).toHaveBeenCalled();
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:diff');
@@ -206,7 +212,11 @@ describe('App', () => {
     const exportedDocument = new DOMParser().parseFromString(html, 'text/html');
     expect(html).toContain('Comparison View');
     expect(html).toContain('app-code-editor');
+    expect(html).toContain('data:image/svg+xml;charset=utf-8');
     expect(html).toContain('grid-template-rows: minmax(0, 1fr) !important');
+    expect(exportedDocument.querySelector('img.brand-mark')?.getAttribute('src')).toContain(
+      'data:image/svg+xml;charset=utf-8',
+    );
     expect(exportedDocument.querySelector('button')).toBeNull();
     expect(exportedDocument.querySelector('input')).toBeNull();
     expect(exportedDocument.querySelector('.file-slot')).toBeNull();

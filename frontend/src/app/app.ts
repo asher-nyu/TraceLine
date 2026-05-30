@@ -206,12 +206,12 @@ export class App {
     this.rightFileRef = leftRef;
   }
 
-  protected exportResult(): void {
+  protected async exportResult(): Promise<void> {
     const result = this.result();
     if (!result) {
       return;
     }
-    this.downloadHtml('traceline-comparison.html', this.snapshotHtml());
+    this.downloadHtml('traceline-comparison.html', await this.snapshotHtml());
     this.snackBar.open('Export ready', 'Close', { duration: 1800 });
   }
 
@@ -330,7 +330,7 @@ export class App {
     URL.revokeObjectURL(url);
   }
 
-  private snapshotHtml(): string {
+  private async snapshotHtml(): Promise<string> {
     const styles = Array.from(document.styleSheets)
       .map((sheet) => {
         try {
@@ -342,7 +342,12 @@ export class App {
         }
       })
       .join('\n');
+    const logoDataUrl = await this.logoDataUrl();
     const body = document.body.cloneNode(true) as HTMLElement;
+    const logo = body.querySelector<HTMLImageElement>('img.brand-mark');
+    if (logoDataUrl && logo) {
+      logo.src = logoDataUrl;
+    }
     body
       .querySelectorAll(
         [
@@ -367,6 +372,7 @@ export class App {
       '<meta charset="utf-8">',
       '<meta name="viewport" content="width=device-width, initial-scale=1">',
       '<title>TraceLine Comparison</title>',
+      logoDataUrl ? `<link rel="icon" type="image/svg+xml" href="${logoDataUrl}">` : '',
       `<style>${styles}\n${this.exportSafetyCss()}</style>`,
       '</head>',
       body.outerHTML,
@@ -405,6 +411,23 @@ app-code-editor,
   overflow: auto !important;
 }
 `;
+  }
+
+  private async logoDataUrl(): Promise<string | null> {
+    if (typeof fetch !== 'function') {
+      return null;
+    }
+
+    try {
+      const response = await fetch('TraceLine.svg');
+      if (!response.ok) {
+        return null;
+      }
+      const svg = await response.text();
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
+    } catch {
+      return null;
+    }
   }
 
   private showError(message: string): void {

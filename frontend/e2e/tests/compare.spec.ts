@@ -161,6 +161,8 @@ test('exports a HTML report without a format menu', async ({ page }) => {
   const html = readFileSync(path as string, 'utf8');
   expect(html).toContain('Comparison View');
   expect(html).toContain('app-code-editor');
+  expect(html).toContain('class="brand-mark"');
+  expect(html).toContain('data:image/svg+xml;charset=utf-8');
   expect(html).toContain('grid-template-rows: minmax(0, 1fr) !important');
   expect(html).not.toContain('snapshot-editor');
   expect(html).not.toContain('<button');
