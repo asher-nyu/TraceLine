@@ -231,6 +231,56 @@ describe('App', () => {
     expect(exportedDocument.querySelector('.file-slot')).toBeNull();
   });
 
+  it('creates PNG favicon data URLs from the exported SVG logo', async () => {
+    const app = fixture.componentInstance as any;
+    const originalImage = globalThis.Image;
+    const clearRect = vi.fn();
+    const drawImage = vi.fn();
+    const fakeCanvas = {
+      width: 0,
+      height: 0,
+      getContext: vi.fn(() => ({ clearRect, drawImage })),
+      toDataURL: vi.fn(() => 'data:image/png;base64,traceline'),
+    } as unknown as HTMLCanvasElement;
+    const originalCreateElement = document.createElement.bind(document);
+
+    class MockImage {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+
+      set src(_value: string) {
+        queueMicrotask(() => this.onload?.());
+      }
+    }
+
+    globalThis.Image = MockImage as unknown as typeof Image;
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      if (tagName === 'canvas') {
+        return fakeCanvas;
+      }
+      return originalCreateElement(tagName);
+    });
+
+    try {
+      const dataUrl = await app.svgToPngDataUrl('data:image/svg+xml;charset=utf-8,%3Csvg%3E', 32);
+
+      expect(dataUrl).toBe('data:image/png;base64,traceline');
+      expect(fakeCanvas.width).toBe(32);
+      expect(fakeCanvas.height).toBe(32);
+      expect(clearRect).toHaveBeenCalledWith(0, 0, 32, 32);
+      expect(drawImage).toHaveBeenCalled();
+    } finally {
+      globalThis.Image = originalImage;
+    }
+  });
+
+  it('skips embedded logo assets when the SVG cannot be loaded', async () => {
+    const app = fixture.componentInstance as any;
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 404 }));
+
+    await expect(app.logoAssets()).resolves.toBeNull();
+  });
+
   it('loads valid files and sends multipart compare requests', async () => {
     const app = fixture.componentInstance as any;
     app.leftFileRef = new File(['alpha'], 'left.txt', { type: 'text/plain' });
