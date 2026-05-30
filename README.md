@@ -1,5 +1,7 @@
 # TraceLine
 
+[Live Demo](https://traceline.onrender.com)
+
 Compare text blocks line by line.
 
 TraceLine is a stateless Angular + Go text comparison app. It compares text entered into Version A and Version B, aligns the results line by line, and highlights the changed words inside each changed line. Uploaded text-compatible files are read in memory only; no submitted text is stored.
@@ -37,6 +39,12 @@ TraceLine does not include accounts, saved comparison history, share links, JSON
 | `POST` | `/api/export` | Build a HTML export from a comparison result. |
 
 ## Local Setup
+
+Clone the GitHub repository into the current local folder. The current folder should be empty before running this command:
+
+```sh
+git clone git@github.com:asher-nyu/TraceLine.git .
+```
 
 Install frontend dependencies:
 
@@ -114,4 +122,5 @@ GitHub Actions is configured to run:
 
 ## Deployment
 
-TraceLine can be deployed as a single Docker container to Render, Fly.io, Railway, or any container host. No database, cache, object storage, or background worker is required.
+TraceLine is deployed as a single Docker-based Render web service.
+No database, cache, object storage, or background worker is required.
