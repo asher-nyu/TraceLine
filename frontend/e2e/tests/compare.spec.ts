@@ -95,6 +95,8 @@ test('compares sample text and renders the side-by-side comparison', async ({ pa
 
 test('lets numbered line rails grow on wrapped result rows', async ({ page }) => {
   await page.setViewportSize({ width: 900, height: 760 });
+  await fillEditor(page, 'Version A text input', 'Long Version A text');
+  await fillEditor(page, 'Version B text input', 'Long Version B text');
   await page.route('**/api/compare', async (route) => {
     await route.fulfill({
       json: {
