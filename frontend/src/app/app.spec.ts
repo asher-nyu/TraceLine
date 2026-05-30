@@ -199,6 +199,10 @@ describe('App', () => {
         status: 200,
       }),
     );
+    vi.spyOn(app, 'svgToPngDataUrl').mockImplementation(async (...args: unknown[]) => {
+      const size = Number(args[1]);
+      return `data:image/png;base64,traceline-${size}`;
+    });
     app.result.set(compareResultFixture);
     fixture.detectChanges();
 
@@ -213,6 +217,11 @@ describe('App', () => {
     expect(html).toContain('Comparison View');
     expect(html).toContain('app-code-editor');
     expect(html).toContain('data:image/svg+xml;charset=utf-8');
+    expect(html).toContain('rel="icon" type="image/png" sizes="32x32"');
+    expect(html).toContain('rel="icon" type="image/svg+xml" sizes="any"');
+    expect(html).toContain('rel="apple-touch-icon" sizes="180x180"');
+    expect(html).toContain('data:image/png;base64,traceline-32');
+    expect(html).toContain('data:image/png;base64,traceline-180');
     expect(html).toContain('grid-template-rows: minmax(0, 1fr) !important');
     expect(exportedDocument.querySelector('img.brand-mark')?.getAttribute('src')).toContain(
       'data:image/svg+xml;charset=utf-8',

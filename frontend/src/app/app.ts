@@ -59,6 +59,12 @@ type DisplayOperation = DiffOperation & {
   rightLineNumber: string;
 };
 
+type LogoAssets = {
+  svgDataUrl: string;
+  png32DataUrl: string | null;
+  png180DataUrl: string | null;
+};
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -342,11 +348,11 @@ export class App {
         }
       })
       .join('\n');
-    const logoDataUrl = await this.logoDataUrl();
+    const logoAssets = await this.logoAssets();
     const body = document.body.cloneNode(true) as HTMLElement;
     const logo = body.querySelector<HTMLImageElement>('img.brand-mark');
-    if (logoDataUrl && logo) {
-      logo.src = logoDataUrl;
+    if (logoAssets && logo) {
+      logo.src = logoAssets.svgDataUrl;
     }
     body
       .querySelectorAll(
@@ -372,7 +378,7 @@ export class App {
       '<meta charset="utf-8">',
       '<meta name="viewport" content="width=device-width, initial-scale=1">',
       '<title>TraceLine Comparison</title>',
-      logoDataUrl ? `<link rel="icon" type="image/svg+xml" href="${logoDataUrl}">` : '',
+      ...this.faviconLinks(logoAssets),
       `<style>${styles}\n${this.exportSafetyCss()}</style>`,
       '</head>',
       body.outerHTML,
@@ -413,7 +419,23 @@ app-code-editor,
 `;
   }
 
-  private async logoDataUrl(): Promise<string | null> {
+  private faviconLinks(logoAssets: LogoAssets | null): string[] {
+    if (!logoAssets) {
+      return [];
+    }
+
+    return [
+      logoAssets.png32DataUrl
+        ? `<link rel="icon" type="image/png" sizes="32x32" href="${logoAssets.png32DataUrl}">`
+        : '',
+      `<link rel="icon" type="image/svg+xml" sizes="any" href="${logoAssets.svgDataUrl}">`,
+      logoAssets.png180DataUrl
+        ? `<link rel="apple-touch-icon" sizes="180x180" href="${logoAssets.png180DataUrl}">`
+        : '',
+    ].filter(Boolean);
+  }
+
+  private async logoAssets(): Promise<LogoAssets | null> {
     if (typeof fetch !== 'function') {
       return null;
     }
@@ -424,10 +446,44 @@ app-code-editor,
         return null;
       }
       const svg = await response.text();
-      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
+      const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.trim())}`;
+      const [png32DataUrl, png180DataUrl] = await Promise.all([
+        this.svgToPngDataUrl(svgDataUrl, 32),
+        this.svgToPngDataUrl(svgDataUrl, 180),
+      ]);
+      return { svgDataUrl, png32DataUrl, png180DataUrl };
     } catch {
       return null;
     }
+  }
+
+  private async svgToPngDataUrl(svgDataUrl: string, size: number): Promise<string | null> {
+    if (typeof Image === 'undefined' || typeof document === 'undefined') {
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const context = canvas.getContext('2d');
+          if (!context) {
+            resolve(null);
+            return;
+          }
+          context.clearRect(0, 0, size, size);
+          context.drawImage(image, 0, 0, size, size);
+          resolve(canvas.toDataURL('image/png'));
+        } catch {
+          resolve(null);
+        }
+      };
+      image.onerror = () => resolve(null);
+      image.src = svgDataUrl;
+    });
   }
 
   private showError(message: string): void {
