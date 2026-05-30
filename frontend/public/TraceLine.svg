@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">TraceLine</title>
+  <desc id="desc">A brand logo concept for a text comparison app that compares two text blocks line by line.</desc>
+  <g transform="matrix(3.122152, 0, 0, 3.122152, -287.270905, -287.269653)">
+    <path d="M156 116h112c32 0 58 26 58 58v222H156c-32 0-58-26-58-58V174c0-32 26-58 58-58z" fill="#eff6ff" stroke="#2563eb" style="stroke-width: 11.9789px;"/>
+    <path d="M244 116h112c32 0 58 26 58 58v164c0 32-26 58-58 58H244V116z" fill="#ecfdf5" stroke="#10b981" style="stroke-width: 11.9789px;"/>
+    <path d="M148 196h72M148 250h96M148 304h54M286 196h84M286 250h56M286 304h92" stroke="#334155" stroke-linecap="round" style="stroke-width: 11.9789px;"/>
+  </g>
+</svg>

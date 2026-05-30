@@ -1,0 +1,251 @@
+<div class="app-shell" [formGroup]="form">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <img class="brand-mark" src="TraceLine.svg" alt="" aria-hidden="true" />
+        <div>
+          <h1>TraceLine</h1>
+          <p>Compare text blocks line by line.</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button
+          mat-stroked-button
+          type="button"
+          matTooltip="Swap versions"
+          aria-label="Swap Version A and Version B"
+          (click)="swapSides()"
+        >
+          <mat-icon>swap_horiz</mat-icon>
+          Swap
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          matTooltip="Clear"
+          aria-label="Clear workspace"
+          (click)="clearAll()"
+        >
+          <mat-icon>delete_sweep</mat-icon>
+          Clear
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="exportResult()"
+          [disabled]="!result()"
+          matTooltip="Download HTML report"
+        >
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="compare()"
+          [disabled]="loading() || !canCompare()"
+        >
+          <mat-icon>difference</mat-icon>
+          Compare
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" aria-label="Comparison loading"></mat-progress-bar>
+    }
+
+    @if (errorMessage()) {
+      <section class="message error" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </section>
+    }
+
+    <section
+      class="workspace"
+      [class.has-file]="hasUploadedFile()"
+      aria-label="Comparison workspace"
+    >
+      <article class="editor-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Version A</h2>
+            <p>
+              {{ leftStats().lines }} lines · {{ leftStats().words }} words ·
+              {{ leftStats().characters }} characters
+            </p>
+          </div>
+          <div class="icon-row">
+            <input
+              #leftInput
+              hidden
+              type="file"
+              [accept]="acceptedFileTypes"
+              (change)="selectFile('left', $event)"
+            />
+            <button
+              mat-stroked-button
+              type="button"
+              aria-label="Upload Version A text-compatible file"
+              [matTooltip]="acceptedFileTooltip"
+              [attr.title]="acceptedFileTooltip"
+              (click)="leftInput.click()"
+            >
+              <mat-icon>upload_file</mat-icon>
+              Upload file
+            </button>
+          </div>
+        </div>
+
+        <div class="drop-zone" (drop)="handleDrop('left', $event)" (dragover)="allowDrop($event)">
+          <div class="file-slot">
+            @if (leftFile()) {
+              <mat-chip-set aria-label="Version A file information">
+                <mat-chip>
+                  <mat-icon matChipAvatar>description</mat-icon>
+                  {{ leftFile()?.name }}
+                  <button
+                    matChipRemove
+                    type="button"
+                    aria-label="Clear Version A file"
+                    (click)="clearFile('left')"
+                  >
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              </mat-chip-set>
+            }
+          </div>
+          <app-code-editor
+            formControlName="leftText"
+            ariaLabel="Version A text input"
+            placeholder="Add the text you want to compare"
+          ></app-code-editor>
+        </div>
+      </article>
+
+      <article class="editor-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Version B</h2>
+            <p>
+              {{ rightStats().lines }} lines · {{ rightStats().words }} words ·
+              {{ rightStats().characters }} characters
+            </p>
+          </div>
+          <div class="icon-row">
+            <input
+              #rightInput
+              hidden
+              type="file"
+              [accept]="acceptedFileTypes"
+              (change)="selectFile('right', $event)"
+            />
+            <button
+              mat-stroked-button
+              type="button"
+              aria-label="Upload Version B text-compatible file"
+              [matTooltip]="acceptedFileTooltip"
+              [attr.title]="acceptedFileTooltip"
+              (click)="rightInput.click()"
+            >
+              <mat-icon>upload_file</mat-icon>
+              Upload file
+            </button>
+          </div>
+        </div>
+
+        <div class="drop-zone" (drop)="handleDrop('right', $event)" (dragover)="allowDrop($event)">
+          <div class="file-slot">
+            @if (rightFile()) {
+              <mat-chip-set aria-label="Version B file information">
+                <mat-chip>
+                  <mat-icon matChipAvatar>description</mat-icon>
+                  {{ rightFile()?.name }}
+                  <button
+                    matChipRemove
+                    type="button"
+                    aria-label="Clear Version B file"
+                    (click)="clearFile('right')"
+                  >
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+              </mat-chip-set>
+            }
+          </div>
+          <app-code-editor
+            formControlName="rightText"
+            ariaLabel="Version B text input"
+            placeholder="Add another text block to compare against"
+          ></app-code-editor>
+        </div>
+      </article>
+    </section>
+
+    @if (result(); as comparison) {
+      <section class="results" aria-label="Comparison View">
+        <div class="results-header">
+          <h2>Comparison View</h2>
+        </div>
+
+        @if (isIdentical()) {
+          <div class="empty-state success">
+            <mat-icon>check_circle</mat-icon>
+            <span>Texts are identical.</span>
+          </div>
+        } @else if (displayedOperations().length === 0) {
+          <div class="empty-state">
+            <mat-icon>check_circle</mat-icon>
+            <span>No differences found.</span>
+          </div>
+        } @else {
+          <div class="diff-table" role="table" aria-label="Side-by-side comparison">
+            <div class="diff-table-head" role="row">
+              <span role="columnheader">Version A</span>
+              <span role="columnheader">Version B</span>
+            </div>
+            @for (operation of displayedOperations(); track trackOperation($index, operation)) {
+              <div class="diff-row" role="row">
+                <div class="result-cell" role="cell">
+                  <span
+                    class="result-line-number"
+                    [class.blank]="!operation.leftLineNumber"
+                    aria-label="Version A line number"
+                    >{{ operation.leftLineNumber }}</span
+                  >
+                  <pre>@for (segment of operationSegments(operation, 'left'); track $index) {<span [class]="segment.type">{{ segment.text }}</span>}</pre>
+                </div>
+                <div class="result-cell" role="cell">
+                  <span
+                    class="result-line-number"
+                    [class.blank]="!operation.rightLineNumber"
+                    aria-label="Version B line number"
+                    >{{ operation.rightLineNumber }}</span
+                  >
+                  <pre>@for (segment of operationSegments(operation, 'right'); track $index) {<span [class]="segment.type">{{ segment.text }}</span>}</pre>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <section class="empty-state intro">
+        <mat-icon>difference</mat-icon>
+        <span>Place one text block on each side to review the differences.</span>
+      </section>
+    }
+  </main>
+
+  <footer class="site-footer">
+    <section aria-label="Copyright">
+      Copyright © {{ currentYear }} Asher Bloom. All rights reserved.
+    </section>
+  </footer>
+</div>

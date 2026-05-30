@@ -1,0 +1,54 @@
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+
+:root {
+  color-scheme: light;
+  --app-bg: #f5f7fb;
+  --surface: #ffffff;
+  --muted-surface: #eef3f7;
+  --raised-surface: #f9fbfc;
+  --ink: #172026;
+  --muted-ink: #66737f;
+  --outline: #d8e1e8;
+  --focus-ring: #176b87;
+  --added-bg: #c7e6ff;
+  --added-ink: #003b73;
+  --removed-bg: #ffe3a3;
+  --removed-ink: #653600;
+  --changed-bg: #f8ecd4;
+  --changed-ink: #4f3d20;
+  --brand: #176b87;
+  --brand-strong: #0b4d63;
+  --accent: #5b6c2f;
+  --shadow: 0 18px 45px rgba(31, 45, 61, 0.12);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--ink);
+  font-family:
+    Inter,
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.cdk-overlay-pane {
+  max-width: calc(100vw - 24px);
+}

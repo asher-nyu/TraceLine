@@ -1,0 +1,8 @@
+services:
+  traceline:
+    build: .
+    environment:
+      TRACELINE_ADDR: :8080
+      TRACELINE_LOG_LEVEL: info
+    ports:
+      - "8080:8080"
