@@ -283,6 +283,24 @@ func lcs(leftTokens []string, rightTokens []string) []Operation {
 	i, j := leftLength, rightLength
 	for i > 0 || j > 0 {
 		if i > 0 && j > 0 && leftTokens[i-1] == rightTokens[j-1] {
+			if dp[i][j-1] == dp[i][j] {
+				operations = append(operations, Operation{
+					Type:       OperationAdd,
+					Right:      rightTokens[j-1],
+					RightIndex: j - 1,
+				})
+				j--
+				continue
+			}
+			if dp[i-1][j] == dp[i][j] {
+				operations = append(operations, Operation{
+					Type:      OperationRemove,
+					Left:      leftTokens[i-1],
+					LeftIndex: i - 1,
+				})
+				i--
+				continue
+			}
 			operations = append(operations, Operation{
 				Type:       OperationEqual,
 				Left:       leftTokens[i-1],

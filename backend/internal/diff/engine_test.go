@@ -135,6 +135,31 @@ func TestInsertedTrailingWordsKeepSharedPeriodUnhighlighted(t *testing.T) {
 	}
 }
 
+func TestRepeatedWordAfterInsertedPhraseKeepsNearestOriginalMatch(t *testing.T) {
+	left := "● Cloud, Hosting & Deployment: Render, Railway, Fly.io, Vercel, Amazon Web Services (AWS), Cloudflare, web hosting, domain management, DNS configuration"
+	right := "● Cloud, Hosting & Deployment: Render, Railway, Fly.io, Vercel, Amazon Web Services (AWS), Cloudflare, web hosting, domain management, DNS configuration, custom domain setup, SSL/TLS configuration"
+
+	result := Compare(left, right, ModeLine)
+	operation := result.Operations[0]
+	if operation.Type != OperationChange {
+		t.Fatalf("expected changed operation, got %s", operation.Type)
+	}
+
+	addedText := ""
+	for _, segment := range operation.RightSegments {
+		if segment.Type == OperationAdd {
+			addedText += segment.Text
+		}
+	}
+	if addedText != ", custom domain setup, SSL/TLS configuration" {
+		t.Fatalf("expected only the inserted trailing phrase to be added, got %q in %#v", addedText, operation.RightSegments)
+	}
+
+	if strings.Contains(addedText, "DNS configuration,") {
+		t.Fatalf("the original DNS configuration should stay equal, got added text %q", addedText)
+	}
+}
+
 func TestValidMode(t *testing.T) {
 	if !ValidMode(ModeLine) {
 		t.Fatal("expected line mode to be valid")
